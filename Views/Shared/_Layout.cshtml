@@ -35,9 +35,7 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Cars" asp-action="Index">Arabalar</a>
-                        </li>
+                        
                     </ul>
                     <ul class="navbar-nav">
                         @if (SignInManager.IsSignedIn(User))
@@ -58,11 +56,7 @@
                                             <i class="fas fa-user me-2"></i>Profil Bilgilerim
                                         </a>
                                     </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Rental" asp-action="MyRentals">
-                                            <i class="fas fa-car me-2"></i>Kiralama Geçmişim
-                                        </a>
-                                    </li>
+                                    
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <form method="post" asp-area="Identity" asp-page="/Account/Logout" id="logoutForm" class="d-inline">
