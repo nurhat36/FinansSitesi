@@ -1,0 +1,31 @@
+﻿@using FinansSitesi.Models.ViewModels
+
+@model AccountCreateViewModel
+
+<h2>Yeni Hesap Oluştur</h2>
+
+<form asp-action="CreateAccount" method="post">
+    <div class="mb-3">
+        <label class="form-label">Hesap Adı</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Para Birimi</label>
+        <select asp-for="Currency" class="form-select">
+            <option value="">-- Seçiniz --</option>
+            <option value="TRY">Türk Lirası (TRY)</option>
+            <option value="USD">ABD Doları (USD)</option>
+            <option value="EUR">Euro (EUR)</option>
+            <!-- İstersen başka para birimleri ekle -->
+        </select>
+        <span asp-validation-for="Currency" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Hesap Oluştur</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

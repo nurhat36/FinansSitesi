@@ -1,9 +1,14 @@
-﻿namespace FinansSitesi.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace FinansSitesi.Models
 {
     public class Transaction
     {
         public int Id { get; set; }
+
         public string UserId { get; set; }
+
+        [ForeignKey("UserId")]
         public ApplicationUser User { get; set; }
 
         public decimal Amount { get; set; }

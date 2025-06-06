@@ -1,0 +1,25 @@
+﻿@model List<Account>
+
+<h2>Hesaplarım</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Hesap Adı</th>
+            <th>Bakiye</th>
+            <th>Para Birimi</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var account in Model)
+        {
+            <tr>
+                <td>@account.Name</td>
+                <td>@account.Balance.ToString("N2")</td>
+                <td>@account.Currency</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="CreateAccount" class="btn btn-primary">Yeni Hesap Oluştur</a>

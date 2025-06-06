@@ -35,6 +35,12 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Transactions" asp-action="Index">İşlemlerim</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Transactions" asp-action="Create">Yeni İşlem</a>
+                        </li>
                         
                     </ul>
                     <ul class="navbar-nav">
@@ -50,14 +56,23 @@
                                             <span class="fw-bold">@UserManager.GetUserName(User)</span>
                                         </div>
                                     </li>
-                                    <li><hr class="dropdown-divider"></li>
+                                    <li><hr class="dropdown-divider" /></li>
+
+                                    <!-- Hesaplarım -->
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Accounts" asp-action="Index">
+                                            <i class="fas fa-wallet me-2"></i>Hesaplarım
+                                        </a>
+                                    </li>
+
                                     <li>
                                         <a class="dropdown-item" asp-controller="Customer" asp-action="Profile">
                                             <i class="fas fa-user me-2"></i>Profil Bilgilerim
                                         </a>
                                     </li>
-                                    
-                                    <li><hr class="dropdown-divider"></li>
+
+                                    <li><hr class="dropdown-divider" /></li>
+
                                     <li>
                                         <form method="post" asp-area="Identity" asp-page="/Account/Logout" id="logoutForm" class="d-inline">
                                             <button type="submit" class="dropdown-item bg-transparent border-0 w-100 text-start" style="cursor:pointer;">
@@ -78,6 +93,7 @@
                             </li>
                         }
                     </ul>
+
                 </div>
             </div>
         </nav>

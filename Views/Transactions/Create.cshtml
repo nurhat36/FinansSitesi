@@ -1,0 +1,119 @@
+﻿@model FinansSitesi.Models.Transaction
+@{
+    ViewData["Title"] = "Yeni İşlem Ekle";
+}
+
+<h2>Yeni İşlem Ekle</h2>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    @* Validasyon hatalarını göster *@
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="mb-3">
+        <label asp-for="Amount" class="form-label">Tutar</label>
+        <input asp-for="Amount" class="form-control" />
+        <span asp-validation-for="Amount" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Type" class="form-label">Tür</label>
+        <select asp-for="Type" class="form-select" id="Type">
+            <option value="Income">Gelir</option>
+            <option value="Expense">Gider</option>
+        </select>
+        <span asp-validation-for="Type" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CategoryId" class="form-label">Kategori</label>
+        <select asp-for="CategoryId" class="form-select" id="CategoryId" style="width: 100%;">
+            <option value="">-- Kategori Seç --</option>
+            @foreach (var category in ViewBag.Categories)
+            {
+                <option value="@category.Id" data-icon="@category.Icon">@category.Name</option>
+            }
+        </select>
+        <span asp-validation-for="CategoryId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="AccountId" class="form-label">Hesap</label>
+        <select asp-for="AccountId" class="form-select">
+            @foreach (var account in ViewBag.Accounts)
+            {
+                <option value="@account.Id">@account.Name</option>
+            }
+        </select>
+        <span asp-validation-for="AccountId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label">Açıklama</label>
+        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    @* İstersen IsRecurring checkbox ekleyebilirsin *@
+    
+    <div class="form-check mb-3">
+        <input asp-for="IsRecurring" class="form-check-input" type="checkbox" id="IsRecurring" />
+        <label asp-for="IsRecurring" class="form-check-label">Tekrarlayan İşlem</label>
+    </div>
+   
+
+    <button type="submit" class="btn btn-success">Kaydet</button>
+    <a asp-action="Index" class="btn btn-secondary">İptal</a>
+</form>
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+}
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            function formatCategoryOption(state) {
+                if (!state.id) return state.text;
+                var iconClass = $(state.element).data('icon');
+                if (iconClass) {
+                    return $('<span><i class="fa ' + iconClass + '" style="margin-right:8px;"></i>' + state.text + '</span>');
+                }
+                return state.text;
+            }
+
+            $('#CategoryId').select2({
+                templateResult: formatCategoryOption,
+                templateSelection: formatCategoryOption,
+                escapeMarkup: function (markup) { return markup; }
+            });
+
+            $('#Type').change(function () {
+                var selectedType = $(this).val();
+                $.get('/Transactions/GetCategoriesByType', { type: selectedType }, function (data) {
+                    var categorySelect = $('#CategoryId');
+                    categorySelect.select2('destroy');
+                    categorySelect.empty();
+                    categorySelect.append('<option value="">-- Kategori Seç --</option>');
+
+                    $.each(data, function (index, category) {
+                        categorySelect.append('<option value="' + category.id + '" data-icon="' + category.icon + '">' + category.name + '</option>');
+                    });
+
+                    categorySelect.select2({
+                        templateResult: formatCategoryOption,
+                        templateSelection: formatCategoryOption,
+                        escapeMarkup: function (markup) { return markup; }
+                    });
+                });
+            });
+        });
+    </script>
+}

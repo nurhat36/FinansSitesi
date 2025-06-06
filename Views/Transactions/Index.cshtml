@@ -1,0 +1,37 @@
+﻿@model List<FinansSitesi.Models.Transaction>
+
+@{
+    ViewData["Title"] = "İşlemlerim";
+}
+
+<h2>İşlemlerim</h2>
+
+<p>
+    <a class="btn btn-primary" asp-action="Create">Yeni İşlem Ekle</a>
+</p>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Tarih</th>
+            <th>Tutar</th>
+            <th>Tür</th>
+            <th>Kategori</th>
+            <th>Hesap</th>
+            <th>Açıklama</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Date.ToShortDateString()</td>
+                <td>@item.Amount ₺</td>
+                <td>@item.Type</td>
+                <td>@item.Category?.Name</td>
+                <td>@item.Account?.Name</td>
+                <td>@item.Description</td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -29,6 +29,11 @@ namespace FinansSitesi.Data
                 .WithMany()
                 .HasForeignKey(t => t.UserId)
                 .OnDelete(DeleteBehavior.Restrict); // Cascade kaldırıldı
+            modelBuilder.Entity<Transaction>()
+    .HasOne(t => t.User)
+    .WithMany(u => u.Transactions)  // Eğer ApplicationUser'da Transactions varsa
+    .HasForeignKey(t => t.UserId);
+
 
             // Transaction -> Account ilişkisi
             modelBuilder.Entity<Transaction>()
