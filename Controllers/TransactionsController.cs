@@ -47,6 +47,9 @@ namespace FinansSitesi.Controllers
             ViewBag.Accounts = _context.Accounts.ToList();
             return View();
         }
+        // GET: Transactions/CreateRecurring
+        
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]

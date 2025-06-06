@@ -1,0 +1,80 @@
+﻿@model FinansSitesi.Models.RecurringTransaction
+
+@{
+    ViewData["Title"] = "Tekrarlayan İşlem Oluştur";
+}
+
+<h2>Tekrarlayan İşlem Oluştur</h2>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Amount" class="form-label">Tutar</label>
+        <input asp-for="Amount" class="form-control" />
+        <span asp-validation-for="Amount" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Type" class="form-label">Tür</label>
+        <select asp-for="Type" class="form-select">
+            <option value="Income">Gelir</option>
+            <option value="Expense">Gider</option>
+        </select>
+        <span asp-validation-for="Type" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CategoryId" class="form-label">Kategori</label>
+        <select asp-for="CategoryId" class="form-select">
+            @foreach (var category in ViewBag.Categories)
+            {
+                <option value="@category.Id">@category.Name</option>
+            }
+        </select>
+        <span asp-validation-for="CategoryId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Frequency" class="form-label">Sıklık</label>
+        <select asp-for="Frequency" class="form-select">
+            <option value="Daily">Günlük</option>
+            <option value="Weekly">Haftalık</option>
+            <option value="Monthly">Aylık</option>
+        </select>
+        <span asp-validation-for="Frequency" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="StartDate" class="form-label">Başlangıç Tarihi</label>
+        <input asp-for="StartDate" class="form-control" type="date" />
+        <span asp-validation-for="StartDate" class="text-danger"></span>
+    </div>
+    
+
+    <div class="mb-3">
+        <label asp-for="EndDate" class="form-label">Bitiş Tarihi (Opsiyonel)</label>
+        <input asp-for="EndDate" class="form-control" type="date" />
+        <span asp-validation-for="EndDate" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="AccountId" class="form-label">Hesap</label>
+        <select asp-for="AccountId" class="form-select">
+            @foreach (var account in ViewBag.Accounts)
+            {
+                <option value="@account.Id">@account.Name</option>
+            }
+        </select>
+        <span asp-validation-for="AccountId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label">Açıklama</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Kaydet</button>
+    <a asp-action="Index" asp-controller="Transactions" class="btn btn-secondary">İptal</a>
+</form>

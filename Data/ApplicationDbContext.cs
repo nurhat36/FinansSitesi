@@ -41,6 +41,11 @@ namespace FinansSitesi.Data
                 .WithMany(a => a.Transactions)
                 .HasForeignKey(t => t.AccountId)
                 .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<RecurringTransaction>()
+                .HasOne(t => t.Account)
+                .WithMany(a => a.RecurringTransactions)
+                .HasForeignKey(t => t.AccountId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Transaction -> Category ilişkisi
             modelBuilder.Entity<Transaction>()

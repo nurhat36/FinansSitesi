@@ -11,5 +11,6 @@
         public string Currency { get; set; }
 
         public ICollection<Transaction> Transactions { get; set; }
+        public ICollection<RecurringTransaction> RecurringTransactions { get; set; }
     }
 }
