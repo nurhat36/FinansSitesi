@@ -1,0 +1,88 @@
+﻿@model FinansSitesi.Models.ExchangeRates
+
+@{
+    ViewData["Title"] = "Güncel Döviz Kurları";
+
+    // Örnek: En çok kullanılan para birimleri (sadece varsa)
+    var popularCurrencies = new List<string> { "USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD" };
+
+    var rates = Model?.Rates ?? new Dictionary<string, decimal>();
+
+    // TRY karşılıkları, base TRY değilse ters çevirmek gerekebilir
+    // Ama burada base döviz ise TRY için farklı bir yol gerekebilir.
+    // Senin modelde base döviz bazında olduğu için burada direkt çekiyoruz.
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (rates.Count > 0)
+{
+    <h4>En Çok Kullanılan Para Birimleri (TRY Karşılığı)</h4>
+    <table class="table table-bordered" style="max-width:400px;">
+        <thead>
+            <tr>
+                <th>Para Birimi</th>
+                <th>TRY Karşılığı</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cur in popularCurrencies)
+            {
+                if (rates.ContainsKey(cur))
+                {
+                    <tr>
+                        <td>@cur</td>
+                        <td>
+                            @if (Model.Base == "TRY")
+                            {
+                                @rates[cur].ToString("N4")
+                            }
+                            else if (cur == "TRY" && Model.Base != "TRY")
+                            {
+                                // Eğer base TRY değilse, TRY kurunu bul
+                                @rates["TRY"].ToString("N4")
+                            }
+                            else if (Model.Base != "TRY")
+                            {
+                                // TRY karşılığını hesaplamak için tersini alabiliriz
+                                var tryRate = rates.ContainsKey("TRY") ? 1 / rates["TRY"] : 0;
+                                var curRate = rates[cur];
+                                var curInTry = tryRate * curRate;
+                                @curInTry.ToString("N4")
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+    <hr />
+
+    <p><strong>Temel Para Birimi:</strong> @Model.Base</p>
+    <p><strong>Tarih:</strong> @Model.Date.ToShortDateString()</p>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Para Birimi</th>
+                <th>Kur</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Rates)
+            {
+                <tr>
+                    <td>@item.Key</td>
+                    <td>@item.Value</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-danger">
+        Döviz kurları alınamadı. Lütfen daha sonra tekrar deneyin.
+    </div>
+}

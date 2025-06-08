@@ -4,6 +4,7 @@ using FinansSitesi.Data; // ApplicationDbContext burada tanımlı
 using FinansSitesi.Models; // ApplicationUser burada tanımlı
 using ArackiralamaProje.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using FinansSitesi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,9 +18,14 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.SignIn.RequireConfirmedAccount = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
+
 .AddDefaultTokenProviders();
 
 // 3. MVC ve Razor Pages
+builder.Services.AddHostedService<RecurringTransactionService>();
+// .NET 6+ için Program.cs
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages(); // Identity Razor Pages (Login, Register, vs.) için gerekli
 

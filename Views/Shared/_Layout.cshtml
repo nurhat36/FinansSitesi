@@ -11,10 +11,10 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ArackiralamaProje</title>
+    <title>@ViewData["Title"] - Finans Sitesi</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/ArackiralamaProje.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/FinansSitesi.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
@@ -22,7 +22,7 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">ArackiralamaProje</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Finans Sitesi</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
                         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -41,6 +41,14 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Transactions" asp-action="Create">Yeni İşlem</a>
                         </li>
+                        <li class="nav-item">
+							<a class="nav-link text-dark" asp-controller="RecurringTransactions" asp-action="Index">Tekrarlayan İşlemler</a>
+                            </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="GuncelKur">Güncel Kur</a>
+                        </li>
+
+						
                         
                     </ul>
                     <ul class="navbar-nav">
@@ -64,12 +72,19 @@
                                             <i class="fas fa-wallet me-2"></i>Hesaplarım
                                         </a>
                                     </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Accounts" asp-action="HesapBakiyeleri">
+                                            <i class="fas fa-coins me-2"></i> Hesap Bakiyelerim
+                                        </a>
+                                    </li>
+
 
                                     <li>
                                         <a class="dropdown-item" asp-controller="Customer" asp-action="Profile">
                                             <i class="fas fa-user me-2"></i>Profil Bilgilerim
                                         </a>
                                     </li>
+
 
                                     <li><hr class="dropdown-divider" /></li>
 
@@ -106,7 +121,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - ArackiralamaProje - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2025 - Finans Sitesi - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

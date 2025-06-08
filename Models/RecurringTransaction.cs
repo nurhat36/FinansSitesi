@@ -14,6 +14,8 @@
         public string Frequency { get; set; } // Daily, Weekly, Monthly
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+        public DateTime? LastGeneratedDate { get; set; }
+
         public int AccountId { get; set; }
         public Account Account { get; set; }
         public string? Description { get; set; }

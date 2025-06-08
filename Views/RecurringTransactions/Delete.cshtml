@@ -1,0 +1,16 @@
+﻿@model FinansSitesi.Models.RecurringTransaction
+
+<h2>Sil</h2>
+
+<div>
+    <h4>@Model.Description</h4>
+    <p>Tutar: @Model.Amount.ToString("C")</p>
+    <p>Başlangıç: @Model.StartDate.ToShortDateString()</p>
+    <p>Bitiş: @(Model.EndDate.HasValue ? Model.EndDate.Value.ToShortDateString() : "-")</p>
+
+    <form asp-action="DeleteConfirmed" method="post">
+        <input type="hidden" asp-for="Id" />
+        <button type="submit" class="btn btn-danger">Sil</button>
+        <a asp-action="Index" class="btn btn-secondary">İptal</a>
+    </form>
+</div>

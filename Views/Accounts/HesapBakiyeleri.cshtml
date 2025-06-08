@@ -1,0 +1,100 @@
+﻿@model List<FinansSitesi.Models.ViewModels.AccountBalanceViewModel>
+
+@{
+    ViewData["Title"] = "Hesap Bakiyeleri";
+
+    // Controller'dan gelen toplamlar
+    var totals = ViewData["TotalByCurrency"] as IEnumerable<dynamic> ?? new List<dynamic>();
+    decimal totalTry = (decimal)ViewData["TotalBalanceInTRY"];
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div>
+    <h4>Toplam Bakiyeler (Para Birimine Göre)</h4>
+    <ul>
+        @foreach (var t in totals)
+        {
+            <li>@t.Currency : @string.Format("{0:N2}", t.Total)</li>
+        }
+    </ul>
+
+    <h4>Toplam Bakiye (TRY Cinsinden): <strong>@string.Format("{0:N2} TRY", totalTry)</strong></h4>
+</div>
+
+<!-- Chart için Chart.js kullanımı örneği -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<canvas id="balanceChart" width="400" height="400"></canvas>
+
+<script>
+    const ctx = document.getElementById('balanceChart').getContext('2d');
+
+    const data = {
+        labels: [
+    @foreach (var t in totals)
+    {
+        @($"'{t.Currency}',")
+    }
+            ],
+        datasets: [{
+            label: 'Toplam Bakiye',
+            data: [
+    @foreach (var t in totals)
+    {
+        @($"{t.Total},")
+    }
+                ],
+            backgroundColor: [
+                'rgba(54, 162, 235, 0.7)', // Mavi
+                'rgba(255, 206, 86, 0.7)', // Sarı
+                'rgba(255, 99, 132, 0.7)'  // Kırmızı
+            ],
+            borderWidth: 1
+        }]
+    };
+
+    const config = {
+        type: 'doughnut',
+        data: data,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                tooltip: {
+                    enabled: true
+                }
+            }
+        },
+    };
+
+    new Chart(ctx, config);
+</script>
+
+<table class="table table-bordered table-striped mt-4">
+    <thead>
+        <tr>
+            <th>Hesap Adı</th>
+            <th>Para Birimi</th>
+            <th>Orijinal Bakiye</th>
+            <th>TRY Cinsinden</th>
+            <th>USD Cinsinden</th>
+            <th>EUR Cinsinden</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var hesap in Model)
+        {
+            <tr>
+                <td>@hesap.AccountName</td>
+                <td>@hesap.Currency</td>
+                <td>@string.Format("{0:N2}", hesap.OriginalBalance)</td>
+                <td>@string.Format("{0:N2}", hesap.BalanceInTRY)</td>
+                <td>@string.Format("{0:N2}", hesap.BalanceInUSD)</td>
+                <td>@string.Format("{0:N2}", hesap.BalanceInEUR)</td>
+            </tr>
+        }
+    </tbody>
+</table>

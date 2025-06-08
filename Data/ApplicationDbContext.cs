@@ -22,6 +22,29 @@ namespace FinansSitesi.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Account>()
+       .Property(a => a.Balance)
+       .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Budget>()
+                .Property(b => b.Amount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<FinancialGoal>()
+                .Property(f => f.CurrentAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<FinancialGoal>()
+                .Property(f => f.TargetAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<RecurringTransaction>()
+                .Property(r => r.Amount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Transaction>()
+                .Property(t => t.Amount)
+                .HasPrecision(18, 2);
 
             // Transaction -> User ilişkisi (tek UserId var)
             modelBuilder.Entity<Transaction>()
