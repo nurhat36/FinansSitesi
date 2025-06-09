@@ -11,5 +11,6 @@
         public decimal CurrentAmount { get; set; }
         public DateTime DueDate { get; set; }
         public string? Description { get; set; }
+        public virtual ICollection<GoalTransaction>? Transactions { get; set; }
     }
 }

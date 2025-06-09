@@ -103,6 +103,7 @@ namespace FinansSitesi.Controllers
             
             ViewData["TotalBalanceInTRY"] = totalBalanceInTry;
 
+
             return View(accountBalances);
         }
 

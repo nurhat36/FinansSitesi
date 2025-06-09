@@ -1,0 +1,63 @@
+﻿@model FinansSitesi.Models.ViewModels.AddAmountViewModel
+
+@{
+    ViewData["Title"] = "Tutar Ekle";
+}
+
+<div class="card shadow">
+    <div class="card-header bg-success text-white">
+        <h4 class="mb-0">Hedefe Tutar Ekle</h4>
+    </div>
+    <div class="card-body">
+        <form asp-action="AddAmount">
+            <input type="hidden" asp-for="FinancialGoalId" />
+
+            <div class="mb-3">
+                <label asp-for="CurrentAmount" class="form-label"></label>
+                <div class="input-group">
+                    <input asp-for="CurrentAmount"
+                           value="@Model.CurrentAmount.ToString("N2")"
+                           class="form-control"
+                            />
+                    <span class="input-group-text">₺</span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="AmountToAdd" class="form-label"></label>
+                <div class="input-group">
+                    <input asp-for="AmountToAdd" class="form-control" />
+                    <span class="input-group-text">₺</span>
+                </div>
+                <span asp-validation-for="AmountToAdd" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="TransactionDate" class="form-label"></label>
+                <input asp-for="TransactionDate" class="form-control" type="date" />
+                <span asp-validation-for="TransactionDate" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-check-circle me-1"></i> Tutarı Ekle
+                </button>
+                <a asp-action="Details" asp-route-id="@Model.FinancialGoalId" class="btn btn-secondary">
+                    <i class="fas fa-times-circle me-1"></i> İptal
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

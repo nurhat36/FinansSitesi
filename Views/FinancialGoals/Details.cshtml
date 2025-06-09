@@ -1,0 +1,212 @@
+﻿@model FinansSitesi.Models.FinancialGoal
+
+@{
+    ViewData["Title"] = "Hedef Detayı";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">@Model.Title</h2>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5 class="text-muted">Açıklama</h5>
+                        <p class="lead">@Model.Description</p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title text-muted">Hedef Tutar</h5>
+                                    <h3 class="text-primary">@Model.TargetAmount.ToString("N2") ₺</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title text-muted">Şu Anki Tutar</h5>
+                                    <h3 class="@(Model.CurrentAmount >= Model.TargetAmount ? "text-success" : "text-warning")">
+                                        @Model.CurrentAmount.ToString("N2") ₺
+                                    </h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- İlerleme Çubuğu -->
+                    <div class="mb-4">
+                        @{
+                            var progressPercentage = Model.TargetAmount > 0 ? 
+                                (Model.CurrentAmount / Model.TargetAmount) * 100 : 0;
+                            progressPercentage = Math.Min(progressPercentage, 100);
+                        }
+                        <h5 class="text-muted">İlerleme Durumu</h5>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar progress-bar-striped @(progressPercentage >= 100 ? "bg-success" : "bg-info")" 
+                                 role="progressbar" 
+                                 style="width: @progressPercentage%;" 
+                                 aria-valuenow="@progressPercentage" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                @Math.Round(progressPercentage, 1)%
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Bitiş Tarihi -->
+                    <div class="mb-4">
+                        <h5 class="text-muted">Bitiş Tarihi</h5>
+                        <div class="d-flex align-items-center">
+                            <i class="far fa-calendar-alt me-2 text-primary"></i>
+                            <span class="h5 mb-0">@Model.DueDate.ToShortDateString()</span>
+                            @{
+                                var daysRemaining = (Model.DueDate - DateTime.Today).Days;
+                                var daysText = daysRemaining > 0 ? $"{daysRemaining} gün kaldı" : 
+                                    daysRemaining < 0 ? $"{Math.Abs(daysRemaining)} gün geçti" : "Bugün son gün";
+                                var daysClass = daysRemaining > 7 ? "text-success" : 
+                                    daysRemaining >= 0 ? "text-warning" : "text-danger";
+                            }
+                            <span class="badge @daysClass ms-3">@daysText</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Grafik -->
+                    <div class="mb-4">
+                        <h5 class="text-muted">Hedef İlerleme Grafiği</h5>
+                        <canvas id="goalChart" height="150"></canvas>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Geri Dön
+                        </a>
+                        <div>
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning me-2">
+                                <i class="fas fa-edit me-1"></i> Düzenle
+                            </a>
+                            <form asp-action="DeleteConfirmed" asp-route-id="@Model.Id" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Bu hedefi silmek istediğinize emin misiniz?');">
+                                    <i class="fas fa-trash-alt me-1"></i> Sil
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sağ Tarafta Ek Bilgiler -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Hedef Özeti</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Kalan Tutar
+                            <span class="badge bg-primary rounded-pill">
+                                @((Model.TargetAmount - Model.CurrentAmount).ToString("N2")) ₺
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Tamamlanma Oranı
+                            <span class="badge @(progressPercentage >= 100 ? "bg-success" : "bg-info") rounded-pill">
+                                @Math.Round(progressPercentage, 1)%
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Günlük Ortalama İhtiyaç
+                            @{
+                                var daysLeft = (Model.DueDate - DateTime.Today).Days;
+                                var dailyNeed = daysLeft > 0 ? 
+                                    (Model.TargetAmount - Model.CurrentAmount) / daysLeft : 0;
+                            }
+                            <span class="badge @(dailyNeed > 0 ? "bg-warning" : "bg-success") rounded-pill">
+                                @(dailyNeed > 0 ? dailyNeed.ToString("N2") + " ₺/gün" : "Hedefe ulaşıldı")
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Hızlı İşlemler</h5>
+                </div>
+                <div class="card-body">
+                   <a asp-action="AddAmount" asp-route-id="@Model.Id" class="btn btn-outline-success btn-block mb-2">
+    <i class="fas fa-plus-circle me-1"></i> Tutar Ekle
+</a>
+                    
+                    <a asp-action="GenerateReport" asp-route-id="@Model.Id" class="btn btn-outline-success btn-block mb-2">
+                        <i class="fas fa-chart-line me-1"></i> Detaylı Rapor
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var ctx = document.getElementById('goalChart').getContext('2d');
+            var goalChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Hedef', 'Şu Anki'],
+                    datasets: [{
+                        label: 'Tutar (₺)',
+                        data: [@Model.TargetAmount, @Model.CurrentAmount],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.5)',
+                            @if(Model.CurrentAmount >= Model.TargetAmount) {
+                                <text>'rgba(75, 192, 192, 0.5)'</text>
+                            } else {
+                                <text>'rgba(255, 206, 86, 0.5)'</text>
+                            }
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            @if(Model.CurrentAmount >= Model.TargetAmount) {
+                                <text>'rgba(75, 192, 192, 1)'</text>
+                            } else {
+                                <text>'rgba(255, 206, 86, 1)'</text>
+                            }
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ' ₺';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw.toLocaleString() + ' ₺';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

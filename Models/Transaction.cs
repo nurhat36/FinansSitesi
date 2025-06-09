@@ -24,5 +24,7 @@ namespace FinansSitesi.Models
         public DateTime Date { get; set; }
 
         public bool IsRecurring { get; set; }
+
+        
     }
 }

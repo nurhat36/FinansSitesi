@@ -224,6 +224,37 @@ namespace FinansSitesi.Migrations
                     b.ToTable("FinancialGoals");
                 });
 
+            modelBuilder.Entity("FinansSitesi.Models.GoalTransaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("FinancialGoalId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FinancialGoalId");
+
+                    b.ToTable("GoalTransactions");
+                });
+
             modelBuilder.Entity("FinansSitesi.Models.Note", b =>
                 {
                     b.Property<int>("Id")
@@ -527,6 +558,17 @@ namespace FinansSitesi.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("FinansSitesi.Models.GoalTransaction", b =>
+                {
+                    b.HasOne("FinansSitesi.Models.FinancialGoal", "FinancialGoal")
+                        .WithMany("Transactions")
+                        .HasForeignKey("FinancialGoalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FinancialGoal");
+                });
+
             modelBuilder.Entity("FinansSitesi.Models.Note", b =>
                 {
                     b.HasOne("FinansSitesi.Models.ApplicationUser", "User")
@@ -669,6 +711,11 @@ namespace FinansSitesi.Migrations
                 {
                     b.Navigation("Budgets");
 
+                    b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("FinansSitesi.Models.FinancialGoal", b =>
+                {
                     b.Navigation("Transactions");
                 });
 #pragma warning restore 612, 618

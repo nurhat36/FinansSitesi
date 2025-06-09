@@ -1,0 +1,61 @@
+﻿@model List<FinansSitesi.ViewModels.FinancialGoalViewModel>
+@{
+    ViewData["Title"] = "Finansal Hedeflerim";
+}
+
+<h2 class="mb-4">@ViewData["Title"]</h2>
+
+<div class="mb-3">
+    <a asp-action="Create" class="btn btn-primary">Yeni Hedef Ekle</a>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">
+        Henüz bir hedef eklemediniz.
+    </div>
+}
+else
+{
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            var goal = item.Goal;
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@goal.Title</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Son Tarih: @goal.DueDate.ToString("dd MMM yyyy")</h6>
+                        <p class="card-text">@goal.Description</p>
+
+                        <p><strong>Hedef Tutar:</strong> @goal.TargetAmount ₺</p>
+                        <p><strong>Toplanan:</strong> @goal.CurrentAmount ₺</p>
+
+                        <div class="progress mb-2">
+                            <div class="progress-bar progress-bar-striped bg-success" role="progressbar"
+                                 style="width: @item.CompletionRate.ToString("0.##")%;"
+                                 aria-valuenow="@item.CompletionRate.ToString("0.##")"
+                                 aria-valuemin="0" aria-valuemax="100">
+                                @item.CompletionRate.ToString("0.##")%
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <a asp-action="Edit" asp-route-id="@goal.Id" class="btn btn-sm btn-warning">Düzenle</a>
+                            <a asp-action="Details" asp-route-id="@goal.Id" class="btn btn-sm btn-info">Detay</a>
+                            <form asp-action="DeleteConfirmed" asp-route-id="@goal.Id" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bu hedefi silmek istediğinize emin misiniz?');">
+                                    Sil
+                                </button>
+                            </form>
+
+                        </div>
+
+                        
+
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

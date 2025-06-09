@@ -1,0 +1,262 @@
+﻿@model List<FinansSitesi.Models.ViewModels.BudgetComparisonViewModel>
+@using Newtonsoft.Json
+
+@{
+    ViewData["Title"] = "Bütçe Karşılaştırmaları";
+    var totalBudget = Model.Sum(x => x.BudgetAmount);
+    var totalSpent = Model.Sum(x => x.SpentAmount);
+    var totalRemaining = totalBudget - totalSpent;
+    var overallPercentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">@ViewData["Title"]</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Özet Kartları -->
+                    <div class="row mb-4">
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-start border-primary border-4 h-100">
+                                <div class="card-body">
+                                    <h6 class="text-muted mb-2">Toplam Bütçe</h6>
+                                    <h3 class="mb-0">@totalBudget.ToString("C")</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-start border-info border-4 h-100">
+                                <div class="card-body">
+                                    <h6 class="text-muted mb-2">Toplam Harcama</h6>
+                                    <h3 class="mb-0">@totalSpent.ToString("C")</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-start @(totalRemaining < 0 ? "border-danger" : "border-success") border-4 h-100">
+                                <div class="card-body">
+                                    <h6 class="text-muted mb-2">Toplam Kalan</h6>
+                                    <h3 class="mb-0">@totalRemaining.ToString("C")</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grafikler -->
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Bütçe Dağılımı</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="budgetDistributionChart" height="250"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Harcama Durumu</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="spendingStatusChart" height="250"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detaylı Tablo -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Kategori Detayları</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-primary">
+                                        <tr>
+                                            <th>Kategori</th>
+                                            <th class="text-end">Bütçe</th>
+                                            <th class="text-end">Harcanan</th>
+                                            <th class="text-end">Kalan</th>
+                                            <th class="text-end">Harcama %</th>
+                                            <th class="text-end">Durum</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model)
+                                        {
+                                            var overBudget = item.Remaining < 0;
+                                            <tr>
+                                                <td>@item.CategoryName</td>
+                                                <td class="text-end">@item.BudgetAmount.ToString("C")</td>
+                                                <td class="text-end">@item.SpentAmount.ToString("C")</td>
+                                                <td class="text-end @(overBudget ? "text-danger" : "text-success")">
+                                                    @item.Remaining.ToString("C")
+                                                </td>
+                                                <td class="text-end">@item.SpentPercentage.ToString("F2")%</td>
+                                                <td class="text-end">
+                                                    <div class="progress" style="height: 20px;">
+                                                        <div class="progress-bar @(overBudget ? "bg-danger" : "bg-success")"
+                                                             role="progressbar"
+                                                             style="width: @(item.SpentPercentage > 100 ? 100 : item.SpentPercentage)%"
+                                                             aria-valuenow="@item.SpentPercentage"
+                                                             aria-valuemin="0"
+                                                             aria-valuemax="100">
+                                                            @if (item.SpentPercentage > 15)
+                                                            {
+                                                                <span>@item.SpentPercentage.ToString("F2")%</span>
+                                                            }
+                                                        </div>
+                                                        @if (item.SpentPercentage <= 15)
+                                                        {
+                                                            <span class="ms-2">@item.SpentPercentage.ToString("F2")%</span>
+                                                        }
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Geri Dön
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .card {
+        border-radius: 0.5rem;
+    }
+
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+
+    .progress {
+        background-color: #e9ecef;
+        border-radius: 0.25rem;
+    }
+
+    .progress-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+</style>
+
+<script>
+    // Bütçe Dağılım Grafiği
+    const budgetCtx = document.getElementById('budgetDistributionChart').getContext('2d');
+    const budgetData = {
+        labels: @Html.Raw(JsonConvert.SerializeObject(Model.Select(x => x.CategoryName))),
+        datasets: [{
+            label: 'Bütçe',
+            data: @Html.Raw(JsonConvert.SerializeObject(Model.Select(x => x.BudgetAmount))),
+            backgroundColor: [
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(255, 99, 132, 0.7)',
+                'rgba(255, 159, 64, 0.7)',
+                'rgba(75, 192, 192, 0.7)',
+                'rgba(153, 102, 255, 0.7)',
+                'rgba(255, 206, 86, 0.7)',
+                'rgba(199, 199, 199, 0.7)'
+            ],
+            borderWidth: 1
+        }]
+    };
+
+    new Chart(budgetCtx, {
+        type: 'doughnut',
+        data: budgetData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            let label = context.label || '';
+                            let value = context.raw || 0;
+                            let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            let percentage = Math.round((value / total) * 100);
+                            return `${label}: ${value.toFixed(2)} (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            cutout: '60%'
+        }
+    });
+
+    // Harcama Durumu Grafiği
+    const statusCtx = document.getElementById('spendingStatusChart').getContext('2d');
+    const statusData = {
+        labels: ['Bütçe', 'Harcanan', 'Kalan'],
+        datasets: [{
+            label: 'Toplam',
+            data: [@totalBudget, @totalSpent, @totalRemaining],
+            backgroundColor: [
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(255, 99, 132, 0.7)',
+                'rgba(75, 192, 192, 0.7)'
+            ],
+            borderWidth: 1
+        }]
+    };
+
+    new Chart(statusCtx, {
+        type: 'bar',
+        data: statusData,
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            return context.dataset.label + ': ' + context.raw.toFixed(2);
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>

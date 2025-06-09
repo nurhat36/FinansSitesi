@@ -1,5 +1,6 @@
 ﻿using FinansSitesi.Data;
 using FinansSitesi.Models;
+using FinansSitesi.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -27,7 +28,35 @@ namespace FinansSitesi.Controllers
 
             return View(budgets);
         }
+        public async Task<IActionResult> Compare()
+        {
+            var userId = _userManager.GetUserId(User);
+
+            var budgets = await _context.Budgets
+                .Include(b => b.Category)
+                .Where(b => b.UserId == userId)
+                .ToListAsync();
+
+            var transactions = await _context.Transactions
+                .Where(t => t.UserId == userId && t.Type == "Expense")
+                .ToListAsync();
+
+            var comparisonList = budgets.Select(b => new BudgetComparisonViewModel
+            {
+                CategoryName = b.Category.Name,
+                BudgetAmount = b.Amount,
+                SpentAmount = transactions
+                    .Where(t => t.CategoryId == b.CategoryId &&
+                                t.Date >= b.StartDate &&
+                                (b.EndDate == null || t.Date <= b.EndDate))
+                    .Sum(t => t.Amount)
+            }).ToList();
+
+            return View(comparisonList);
+        }
+
         // GET: Budget/Edit/5
+
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)

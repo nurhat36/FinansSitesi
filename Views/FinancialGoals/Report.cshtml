@@ -1,0 +1,168 @@
+﻿@model FinansSitesi.Models.ViewModels.FinancialGoalReportViewModel
+
+@{
+    ViewData["Title"] = $"{Model.Goal.Title} - Detaylı Rapor";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-info text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">@Model.Goal.Title - Detaylı Rapor</h2>
+                <a asp-action="Details" asp-route-id="@Model.Goal.Id" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-1"></i> Geri Dön
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <!-- Özet Bilgiler -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="text-muted">Toplanan Tutar</h5>
+                            <h3 class="text-success">@Model.TotalAdded.ToString("N2") ₺</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="text-muted">Kalan Tutar</h5>
+                            <h3 class="@(Model.RemainingAmount > 0 ? "text-warning" : "text-success")">
+                                @Model.RemainingAmount.ToString("N2") ₺
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="text-muted">Kalan Gün</h5>
+                            <h3 class="@(Model.DaysRemaining > 7 ? "text-success" : "text-danger")">
+                                @Model.DaysRemaining
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="text-muted">Günlük İhtiyaç</h5>
+                            <h3 class="@(Model.DailyNeeded > 0 ? "text-primary" : "text-success")">
+                                @(Model.DailyNeeded > 0 ? Model.DailyNeeded.ToString("N2") + " ₺" : "Hedefe ulaşıldı")
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- İlerleme Grafiği -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">İlerleme Grafiği</h4>
+                </div>
+                <div class="card-body">
+                    <canvas id="progressChart" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- İşlem Geçmişi -->
+            <div class="card">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">İşlem Geçmişi</h4>
+                        <a asp-action="DownloadPdfReport" asp-route-id="@Model.Goal.Id" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-download me-1"></i> PDF Olarak İndir
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Tutar</th>
+                                    <th>Açıklama</th>
+                                    <th>Toplam</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var runningTotal = 0m;
+                                }
+                                @foreach (var transaction in Model.Transactions)
+                                {
+                                    runningTotal += transaction.Amount;
+                                    <tr>
+                                        <td>@transaction.TransactionDate.ToString("dd.MM.yyyy")</td>
+                                        <td class="@(transaction.Amount > 0 ? "text-success" : "text-danger")">
+                                            @transaction.Amount.ToString("N2") ₺
+                                        </td>
+                                        <td>@transaction.Description</td>
+                                        <td>@runningTotal.ToString("N2") ₺</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // İlerleme Grafiği
+            var ctx = document.getElementById('progressChart').getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model.ChartLabels)),
+                    datasets: [{
+                        label: 'Toplanan Tutar',
+                        data: @Html.Raw(Json.Serialize(Model.ChartData)),
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }, {
+                        label: 'Hedef',
+                        data: Array(@Model.ChartLabels.Count).fill(@Model.Goal.TargetAmount),
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1,
+                        borderDash: [5, 5],
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return value + ' ₺';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return context.dataset.label + ': ' + context.raw.toLocaleString('tr-TR') + ' ₺';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}
