@@ -1,54 +1,155 @@
 ﻿@model List<FinansSitesi.Models.ViewModels.AccountBalanceViewModel>
+@using Newtonsoft.Json
 
 @{
     ViewData["Title"] = "Hesap Bakiyeleri";
 
-    // Controller'dan gelen toplamlar
     var totals = ViewData["TotalByCurrency"] as IEnumerable<dynamic> ?? new List<dynamic>();
-    decimal totalTry = (decimal)ViewData["TotalBalanceInTRY"];
+    decimal totalTry = (decimal)(ViewData["TotalBalanceInTRY"] ?? 0);
+    
+    // TRY karşılıklarını içeren yeni liste oluştur
+    var totalsInTRY = new List<dynamic>();
+    foreach (var item in totals)
+    {
+        if (item.Currency == "TRY")
+        {
+            totalsInTRY.Add(new { Currency = item.Currency, Total = item.Total });
+        }
+        else
+        {
+            // Modelden bu hesabın TRY karşılığını bul
+            var account = Model.FirstOrDefault(a => a.Currency == item.Currency.ToString());
+            if (account != null)
+            {
+                totalsInTRY.Add(new { Currency = item.Currency, Total = account.BalanceInTRY });
+            }
+        }
+    }
 }
 
-<h2>@ViewData["Title"]</h2>
+<div class="container-fluid py-4">
+    <a href="/Budget/Create" class="btn btn-success">Bütçe Ekle</a>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">@ViewData["Title"]</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Toplam Bakiye Kartı -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Toplam Bakiyeler (Para Birimine Göre)</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        @foreach (var t in totals)
+                                        {
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="fw-bold">@t.Currency</span>
+                                                <span class="badge bg-primary rounded-pill">@string.Format("{0:N2}", t.Total)</span>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
 
-<div>
-    <h4>Toplam Bakiyeler (Para Birimine Göre)</h4>
-    <ul>
-        @foreach (var t in totals)
-        {
-            <li>@t.Currency : @string.Format("{0:N2}", t.Total)</li>
-        }
-    </ul>
 
-    <h4>Toplam Bakiye (TRY Cinsinden): <strong>@string.Format("{0:N2} TRY", totalTry)</strong></h4>
+                        <!-- TRY Bakiye ve Grafik -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Toplam Bakiye (TRY)</h5>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h3 class="text-success fw-bold mb-4">@string.Format("{0:N2} TRY", totalTry)</h3>
+
+                                    <!-- Grafik -->
+                                    <div style="max-width: 250px; height: 250px; margin: 0 auto;">
+                                        <canvas id="balanceChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hesap Tablosu -->
+                    <div class="card border-0 shadow-sm mt-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Hesap Detayları</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped mb-0">
+                                    <thead class="table-primary">
+                                        <tr>
+                                            <th>Hesap Adı</th>
+                                            <th>Para Birimi</th>
+                                            <th>Orijinal Bakiye</th>
+                                            <th>TRY Cinsinden</th>
+                                            <th>USD Cinsinden</th>
+                                            <th>EUR Cinsinden</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var hesap in Model)
+                                        {
+                                            <tr>
+                                                <td>@hesap.AccountName</td>
+                                                <td><span class="badge bg-secondary">@hesap.Currency</span></td>
+                                                <td class="fw-bold">@string.Format("{0:N2}", hesap.OriginalBalance)</td>
+                                                <td class="text-success">@string.Format("{0:N2}", hesap.BalanceInTRY)</td>
+                                                <td class="text-primary">@string.Format("{0:N2}", hesap.BalanceInUSD)</td>
+                                                <td class="text-info">@string.Format("{0:N2}", hesap.BalanceInEUR)</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Chart için Chart.js kullanımı örneği -->
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<canvas id="balanceChart" width="400" height="400"></canvas>
-
 <script>
+    const labels = @Html.Raw(JsonConvert.SerializeObject(totals.Select(x => x.Currency)));
+    // TRY karşılıklarını kullan
+    const dataSet = @Html.Raw(JsonConvert.SerializeObject(totalsInTRY.Select(x => x.Total)));
+
     const ctx = document.getElementById('balanceChart').getContext('2d');
 
     const data = {
-        labels: [
-    @foreach (var t in totals)
-    {
-        @($"'{t.Currency}',")
-    }
-            ],
+        labels: labels,
         datasets: [{
-            label: 'Toplam Bakiye',
-            data: [
-    @foreach (var t in totals)
-    {
-        @($"{t.Total},")
-    }
-                ],
+            label: 'Toplam Bakiye (TRY Karşılığı)',
+            data: dataSet,
             backgroundColor: [
-                'rgba(54, 162, 235, 0.7)', // Mavi
-                'rgba(255, 206, 86, 0.7)', // Sarı
-                'rgba(255, 99, 132, 0.7)'  // Kırmızı
+                'rgba(54, 162, 235, 0.7)',  // Mavi
+                'rgba(255, 206, 86, 0.7)',   // Sarı
+                'rgba(255, 99, 132, 0.7)',   // Kırmızı
+                'rgba(75, 192, 192, 0.7)',   // Yeşil
+                'rgba(153, 102, 255, 0.7)',  // Mor
+                'rgba(255, 159, 64, 0.7)',   // Turuncu
+                'rgba(199, 199, 199, 0.7)'   // Gri
+            ],
+            borderColor: [
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(255, 99, 132, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)',
+                'rgba(199, 199, 199, 1)'
             ],
             borderWidth: 1
         }]
@@ -59,42 +160,60 @@
         data: data,
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
                 },
                 tooltip: {
-                    enabled: true
+                    callbacks: {
+                        label: function (context) {
+                            let label = context.label || '';
+                            let value = context.raw || 0;
+                            let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            let percentage = Math.round((value / total) * 100);
+                            return `${label}: ${value.toFixed(2)} TRY (${percentage}%)`;
+                        }
+                    }
                 }
-            }
-        },
+            },
+            cutout: '65%'
+        }
     };
 
     new Chart(ctx, config);
 </script>
 
-<table class="table table-bordered table-striped mt-4">
-    <thead>
-        <tr>
-            <th>Hesap Adı</th>
-            <th>Para Birimi</th>
-            <th>Orijinal Bakiye</th>
-            <th>TRY Cinsinden</th>
-            <th>USD Cinsinden</th>
-            <th>EUR Cinsinden</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var hesap in Model)
-        {
-            <tr>
-                <td>@hesap.AccountName</td>
-                <td>@hesap.Currency</td>
-                <td>@string.Format("{0:N2}", hesap.OriginalBalance)</td>
-                <td>@string.Format("{0:N2}", hesap.BalanceInTRY)</td>
-                <td>@string.Format("{0:N2}", hesap.BalanceInUSD)</td>
-                <td>@string.Format("{0:N2}", hesap.BalanceInEUR)</td>
-            </tr>
-        }
-    </tbody>
-</table>
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .card {
+        border-radius: 0.5rem;
+    }
+
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+
+    .badge {
+        font-size: 0.75em;
+        padding: 0.35em 0.65em;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+</style>

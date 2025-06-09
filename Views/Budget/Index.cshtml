@@ -1,0 +1,37 @@
+﻿@model IEnumerable<FinansSitesi.Models.Budget>
+
+@{
+    ViewData["Title"] = "Bütçelerim";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Kategori</th>
+            <th>Miktar</th>
+            <th>Dönem</th>
+            <th>Başlangıç Tarihi</th>
+            <th>Bitiş Tarihi</th>
+            <th>İşlemler</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var budget in Model)
+        {
+            <tr>
+                <td>@budget.Category.Name</td>  <!-- Kategori adı için -->
+                <td>@budget.Amount.ToString("C")</td>
+                <td>@budget.Period</td>
+                <td>@budget.StartDate.ToShortDateString()</td>
+                <td>@(budget.EndDate.HasValue ? budget.EndDate.Value.ToShortDateString() : "-")</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@budget.Id" class="btn btn-sm btn-primary">Düzenle</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Create" class="btn btn-success mt-3">Yeni Bütçe Ekle</a>
