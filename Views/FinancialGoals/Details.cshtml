@@ -157,31 +157,24 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             var ctx = document.getElementById('goalChart').getContext('2d');
+
+            var hedef = @Model.TargetAmount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var suAnki = @Model.CurrentAmount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+            var renk = suAnki >= hedef ? 'rgba(75, 192, 192, 0.5)' : 'rgba(255, 206, 86, 0.5)';
+            var kenarRenk = suAnki >= hedef ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 206, 86, 1)';
+
             var goalChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['Hedef', 'Şu Anki'],
                     datasets: [{
                         label: 'Tutar (₺)',
-                        data: [@Model.TargetAmount, @Model.CurrentAmount],
-                        backgroundColor: [
-                            'rgba(54, 162, 235, 0.5)',
-                            @if(Model.CurrentAmount >= Model.TargetAmount) {
-                                <text>'rgba(75, 192, 192, 0.5)'</text>
-                            } else {
-                                <text>'rgba(255, 206, 86, 0.5)'</text>
-                            }
-                        ],
-                        borderColor: [
-                            'rgba(54, 162, 235, 1)',
-                            @if(Model.CurrentAmount >= Model.TargetAmount) {
-                                <text>'rgba(75, 192, 192, 1)'</text>
-                            } else {
-                                <text>'rgba(255, 206, 86, 1)'</text>
-                            }
-                        ],
+                        data: [hedef, suAnki],
+                        backgroundColor: ['rgba(54, 162, 235, 0.5)', renk],
+                        borderColor: ['rgba(54, 162, 235, 1)', kenarRenk],
                         borderWidth: 1
                     }]
                 },
@@ -190,7 +183,7 @@
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                callback: function(value) {
+                                callback: function (value) {
                                     return value + ' ₺';
                                 }
                             }
@@ -199,7 +192,7 @@
                     plugins: {
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
+                                label: function (context) {
                                     return context.dataset.label + ': ' + context.raw.toLocaleString() + ' ₺';
                                 }
                             }
@@ -209,4 +202,5 @@
             });
         });
     </script>
+
 }

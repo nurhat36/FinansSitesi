@@ -1,0 +1,22 @@
+﻿@model List<FinansSitesi.Models.Note>
+@{
+    ViewData["Title"] = "Notlarım";
+}
+<h2>Notlarım</h2>
+
+<a href="/Note/Create" class="btn btn-primary mb-3">Yeni Not Ekle</a>
+
+@foreach (var note in Model)
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            <strong>@note.Title</strong> <span class="text-muted float-end">@note.CreatedAt.ToShortDateString()</span>
+        </div>
+        <div class="card-body">
+            <p>@note.Content</p>
+            <a href="/Note/Edit/@note.Id" class="btn btn-warning btn-sm">Düzenle</a>
+            <a href="/Note/Delete/@note.Id" class="btn btn-danger btn-sm">Sil</a>
+            <a href="/Note/DownloadPdf/@note.Id" class="btn btn-primary btn-sm">PDF İndir</a>
+        </div>
+    </div>
+}

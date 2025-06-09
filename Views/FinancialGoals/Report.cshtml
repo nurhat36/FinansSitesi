@@ -118,46 +118,81 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // İlerleme Grafiği
-            var ctx = document.getElementById('progressChart').getContext('2d');
-            var chart = new Chart(ctx, {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+
+            const chart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: @Html.Raw(Json.Serialize(Model.ChartLabels)),
-                    datasets: [{
-                        label: 'Toplanan Tutar',
-                        data: @Html.Raw(Json.Serialize(Model.ChartData)),
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 2,
-                        tension: 0.3,
-                        fill: true
-                    }, {
-                        label: 'Hedef',
-                        data: Array(@Model.ChartLabels.Count).fill(@Model.Goal.TargetAmount),
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1,
-                        borderDash: [5, 5],
-                        pointRadius: 0
-                    }]
+                    datasets: [
+                        {
+                            label: 'Toplanan Tutar',
+                            data: @Html.Raw(Json.Serialize(Model.ChartData)),
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)', // Hafif yeşil dolgu
+                            borderColor: 'rgba(40, 167, 69, 1)', // Bootstrap success rengi
+                            pointBackgroundColor: 'rgba(40, 167, 69, 1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Hedef Tutar',
+                            data: Array(@Model.ChartLabels.Count).fill(@Model.Goal.TargetAmount),
+                            borderColor: 'rgba(220, 53, 69, 1)', // Bootstrap danger rengi
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: false
+                        }
+                    ]
                 },
                 options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function (value) {
-                                    return value + ' ₺';
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 20,
+                                color: '#343a40'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Finansal Hedef İlerlemesi',
+                            color: '#343a40',
+                            font: {
+                                size: 18,
+                                weight: 'bold'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return `${context.dataset.label}: ${context.raw.toLocaleString('tr-TR')} ₺`;
                                 }
                             }
                         }
                     },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function (context) {
-                                    return context.dataset.label + ': ' + context.raw.toLocaleString('tr-TR') + ' ₺';
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#495057',
+                                callback: function (value) {
+                                    return value.toLocaleString('tr-TR') + ' ₺';
                                 }
+                            },
+                            grid: {
+                                color: '#dee2e6'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#495057'
+                            },
+                            grid: {
+                                display: false
                             }
                         }
                     }
@@ -165,4 +200,9 @@
             });
         });
     </script>
+    <style>
+        #progressChart {
+            max-height: 400px;
+        }
+    </style>
 }

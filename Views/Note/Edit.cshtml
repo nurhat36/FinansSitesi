@@ -1,0 +1,18 @@
+﻿@model FinansSitesi.Models.Note
+@{
+    ViewData["Title"] = "Notu Düzenle";
+}
+<h2>Notu Düzenle</h2>
+
+<form method="post">
+    <input type="hidden" asp-for="Id" />
+    <div class="form-group mb-2">
+        <label>Başlık</label>
+        <input asp-for="Title" class="form-control" />
+    </div>
+    <div class="form-group mb-2">
+        <label>İçerik</label>
+        <textarea asp-for="Content" class="form-control" rows="5"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Güncelle</button>
+</form>
