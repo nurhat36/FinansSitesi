@@ -19,6 +19,8 @@ namespace FinansSitesi.Data
         public DbSet<FinancialGoal> FinancialGoals { get; set; }
         public DbSet<Note> Notes { get; set; }
         public DbSet<GoalTransaction> GoalTransactions { get; set; }
+        // Data/ApplicationDbContext.cs
+        public DbSet<Reminder> Reminders { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

@@ -12,6 +12,7 @@ namespace FinansSitesi.Models {
         public ICollection<Budget> Budgets { get; set; }
         public ICollection<FinancialGoal> FinancialGoals { get; set; }
         public ICollection<Note> Notes { get; set; }
+        public ICollection<Reminder> Reminders { get; set; }
 
     }
 }

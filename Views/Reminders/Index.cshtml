@@ -1,0 +1,173 @@
+﻿@model IEnumerable<Reminder>
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-bell me-2"></i> Hatırlatıcılarım</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReminderModal">
+            <i class="fas fa-plus me-1"></i> Yeni Ekle
+        </button>
+    </div>
+
+    <div class="list-group" id="reminderListContainer">
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">
+                Henüz hatırlatıcı eklemediniz. Yeni bir hatırlatıcı oluşturmak için "Yeni Ekle" butonuna tıklayın.
+            </div>
+        }
+
+        @foreach (var item in Model)
+        {
+            <div class="list-group-item @(item.IsCompleted ? "bg-light" : "")" data-id="@item.Id">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="me-3">
+                        <h5 class="@(item.IsCompleted ? "text-decoration-line-through text-muted" : "")">
+                            @item.Title
+                            @if (item.IsCompleted)
+                            {
+                                <span class="badge bg-success ms-2">Tamamlandı</span>
+                            }
+                            else if (item.ReminderDate < DateTime.Now)
+                            {
+                                <span class="badge bg-danger ms-2">Geçmiş</span>
+                            }
+                            else if (item.ReminderDate < DateTime.Now.AddHours(2))
+                            {
+                                <span class="badge bg-warning ms-2">Yaklaşıyor</span>
+                            }
+                        </h5>
+                        <p class="mb-1 @(item.IsCompleted ? "text-muted" : "")">@item.Description</p>
+                        <small class="text-muted">@item.ReminderDate.ToString("dd MMMM yyyy HH:mm")</small>
+                    </div>
+                    <div class="btn-group">
+                        @if (!item.IsCompleted)
+                        {
+                            <button class="btn btn-sm btn-outline-success complete-btn" data-id="@item.Id">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        }
+                        <button class="btn btn-sm btn-outline-danger delete-btn" data-id="@item.Id">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Add Reminder Modal -->
+<div class="modal fade" id="addReminderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i> Yeni Hatırlatıcı</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="reminderForm" asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Başlık</label>
+                        <input type="text" class="form-control" name="Title" required maxlength="100">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <textarea class="form-control" name="Description" rows="3" maxlength="500"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tarih & Saat</label>
+                        <input type="datetime-local" class="form-control" name="ReminderDate" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Form submission
+            $('#reminderForm').submit(function (e) {
+                e.preventDefault();
+                var form = $(this);
+
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            $('#addReminderModal').modal('hide');
+                            showToast('success', 'Hatırlatıcı başarıyla eklendi!');
+                            refreshReminderList();
+                            form.trigger('reset');
+                        } else {
+                            showToast('error', 'Hata oluştu: ' + (response.errors || 'Bilinmeyen hata'));
+                        }
+                    },
+                    error: function () {
+                        showToast('error', 'Sunucu hatası oluştu');
+                    }
+                });
+            });
+
+            // Complete button
+            $(document).on('click', '.complete-btn', function () {
+                var id = $(this).data('id');
+                $.post('/Reminders/Complete/' + id, function (response) {
+                    if (response.success) {
+                        showToast('success', 'Hatırlatıcı tamamlandı olarak işaretlendi');
+                        refreshReminderList();
+                    } else {
+                        showToast('error', 'İşlem başarısız');
+                    }
+                });
+            });
+
+            // Delete button
+            $(document).on('click', '.delete-btn', function () {
+                if (confirm('Bu hatırlatıcıyı silmek istediğinize emin misiniz?')) {
+                    var id = $(this).data('id');
+                    $.post('/Reminders/Delete/' + id, function (response) {
+                        if (response.success) {
+                            showToast('success', 'Hatırlatıcı silindi');
+                            refreshReminderList();
+                        } else {
+                            showToast('error', 'Silme işlemi başarısız');
+                        }
+                    });
+                }
+            });
+
+            // Helper functions
+            function refreshReminderList() {
+                $.get('/Reminders/Index', function (data) {
+                    $('#reminderListContainer').html($(data).find('#reminderListContainer').html());
+                });
+            }
+
+            function showToast(type, message) {
+                var toast = `<div class="toast show align-items-center text-white bg-${type} border-0" role="alert">
+                                        <div class="d-flex">
+                                            <div class="toast-body">${message}</div>
+                                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                                        </div>
+                                    </div>`;
+
+                $('#toastContainer').append(toast);
+                setTimeout(function () {
+                    $('.toast').remove();
+                }, 5000);
+            }
+        });
+    </script>
+}

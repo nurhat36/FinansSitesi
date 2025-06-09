@@ -6,12 +6,15 @@ using ArackiralamaProje.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using FinansSitesi.Services;
 using Rotativa.AspNetCore;
+using Microsoft.Extensions.Options;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Veritabanı bağlantısı
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 // 2. Identity hizmeti (kullanıcı ve rol desteği)
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -22,10 +25,17 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddDefaultTokenProviders();
 
 // 3. Özel servisler ve e-posta servisi
+// Servisleri ekleyin
+builder.Services.AddTransient<IEmailService, EmailService>();
+builder.Services.AddHostedService<ReminderBackgroundService>();
+
+// appsettings.json'a e-posta ayarları
+
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddHostedService<RecurringTransactionService>();
 
 // 4. MVC, Razor ve diğer servisler
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddMemoryCache();

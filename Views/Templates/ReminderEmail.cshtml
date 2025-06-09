@@ -1,0 +1,64 @@
+﻿@model Reminder
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .content {
+            padding: 20px;
+            border: 1px solid #ddd;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 0.8em;
+            text-align: center;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>@Model.Title</h1>
+        </div>
+
+        <div class="content">
+            <p>@Model.Description</p>
+
+            <p><strong>Tarih:</strong> @Model.ReminderDate.ToString("f")</p>
+
+            @{
+                var timeLeft = Model.ReminderDate - DateTime.UtcNow;
+                var timeText = timeLeft.TotalHours >= 24 ?
+                $"{(int)timeLeft.TotalDays} gün" :
+                $"{(int)timeLeft.TotalHours} saat";
+            }
+
+            <p>Bu hatırlatıcı <strong>@timeText</strong> sonra gerçekleşecek.</p>
+        </div>
+
+        <div class="footer">
+            <p>© @DateTime.Now.Year Finans Takip Sistemi</p>
+        </div>
+    </div>
+</body>
+</html>
