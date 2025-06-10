@@ -44,6 +44,7 @@ namespace FinansSitesi.Services
             foreach (var reminder in reminders)
             {
                 try
+
                 {
                     var timeLeft = reminder.ReminderDate - now;
                     var timeText = timeLeft.TotalHours >= 24 ? "1 gün" : "3 saat";
