@@ -3,86 +3,196 @@
 @{
     ViewData["Title"] = "Güncel Döviz Kurları";
 
-    // Örnek: En çok kullanılan para birimleri (sadece varsa)
     var popularCurrencies = new List<string> { "USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD" };
-
     var rates = Model?.Rates ?? new Dictionary<string, decimal>();
-
-    // TRY karşılıkları, base TRY değilse ters çevirmek gerekebilir
-    // Ama burada base döviz ise TRY için farklı bir yol gerekebilir.
-    // Senin modelde base döviz bazında olduğu için burada direkt çekiyoruz.
 }
 
-<h2>@ViewData["Title"]</h2>
-
-@if (rates.Count > 0)
-{
-    <h4>En Çok Kullanılan Para Birimleri (TRY Karşılığı)</h4>
-    <table class="table table-bordered" style="max-width:400px;">
-        <thead>
-            <tr>
-                <th>Para Birimi</th>
-                <th>TRY Karşılığı</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var cur in popularCurrencies)
-            {
-                if (rates.ContainsKey(cur))
-                {
-                    <tr>
-                        <td>@cur</td>
-                        <td>
-                            @if (Model.Base == "TRY")
-                            {
-                                @rates[cur].ToString("N4")
-                            }
-                            else if (cur == "TRY" && Model.Base != "TRY")
-                            {
-                                // Eğer base TRY değilse, TRY kurunu bul
-                                @rates["TRY"].ToString("N4")
-                            }
-                            else if (Model.Base != "TRY")
-                            {
-                                // TRY karşılığını hesaplamak için tersini alabiliriz
-                                var tryRate = rates.ContainsKey("TRY") ? 1 / rates["TRY"] : 0;
-                                var curRate = rates[cur];
-                                var curInTry = tryRate * curRate;
-                                @curInTry.ToString("N4")
-                            }
-                        </td>
-                    </tr>
-                }
-            }
-        </tbody>
-    </table>
-
-    <hr />
-
-    <p><strong>Temel Para Birimi:</strong> @Model.Base</p>
-    <p><strong>Tarih:</strong> @Model.Date.ToShortDateString()</p>
-
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Para Birimi</th>
-                <th>Kur</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.Rates)
-            {
-                <tr>
-                    <td>@item.Key</td>
-                    <td>@item.Value</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-else
-{
-    <div class="alert alert-danger">
-        Döviz kurları alınamadı. Lütfen daha sonra tekrar deneyin.
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="display-5 fw-bold text-primary">@ViewData["Title"]</h1>
+        <div class="text-muted">
+            <i class="bi bi-calendar-date me-1"></i>
+            @DateTime.Now.ToString("dd MMMM yyyy, dddd")
+        </div>
     </div>
+
+    @if (rates.Count > 0)
+    {
+        <div class="row">
+            <!-- Popular Currencies Card -->
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="h5 mb-0"><i class="bi bi-star-fill me-2"></i>Popüler Döviz Kurları</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Para Birimi</th>
+                                        <th class="text-end">TRY Karşılığı</th>
+                                       
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var cur in popularCurrencies)
+                                    {
+                                        if (rates.ContainsKey(cur))
+                                        {
+                                            decimal rateValue = 0;
+                                            if (Model.Base == "TRY")
+                                            {
+                                                rateValue = rates[cur];
+                                            }
+                                            else if (cur == "TRY" && Model.Base != "TRY")
+                                            {
+                                                rateValue = rates["TRY"];
+                                            }
+                                            else if (Model.Base != "TRY")
+                                            {
+                                                var tryRate = rates.ContainsKey("TRY") ? 1 / rates["TRY"] : 0;
+                                                var curRate = rates[cur];
+                                                rateValue = tryRate * curRate;
+                                            }
+
+                                            <tr>
+                                                <td>
+                                                    <span class="flag-icon flag-icon-@cur.ToLower() me-2"></span>
+                                                    <strong>@cur</strong>
+                                                </td>
+                                                <td class="text-end fw-bold">@rateValue.ToString("N4")</td>
+                                               
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exchange Rate Info Card -->
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-info text-white">
+                        <h3 class="h5 mb-0"><i class="bi bi-info-circle me-2"></i>Döviz Bilgileri</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-column h-100">
+                            <div class="mb-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded me-3">
+                                        <i class="bi bi-currency-exchange text-primary fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="h6 mb-0">Temel Para Birimi</h4>
+                                        <p class="mb-0 fs-5 fw-bold">@Model.Base</p>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded me-3">
+                                        <i class="bi bi-calendar-check text-primary fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="h6 mb-0">Güncelleme Tarihi</h4>
+                                        <p class="mb-0 fs-5 fw-bold">@Model.Date.ToString("dd MMMM yyyy HH:mm")</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                           
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- All Rates Table -->
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-white">
+                <h3 class="h5 mb-0"><i class="bi bi-list-columns me-2"></i>Tüm Döviz Kurları</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Para Birimi</th>
+                                <th class="text-end">Kur Değeri</th>
+                                <th class="text-end">TRY Karşılığı</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Rates)
+                            {
+                                decimal tryEquivalent = 0;
+                                if (Model.Base == "TRY")
+                                {
+                                    tryEquivalent = item.Value;
+                                }
+                                else if (item.Key == "TRY")
+                                {
+                                    tryEquivalent = item.Value;
+                                }
+                                else
+                                {
+                                    var tryRate = rates.ContainsKey("TRY") ? 1 / rates["TRY"] : 0;
+                                    tryEquivalent = tryRate * item.Value;
+                                }
+
+                                <tr>
+                                    <td>
+                                        <span class="flag-icon flag-icon-@item.Key.ToLower() me-2"></span>
+                                        @item.Key
+                                    </td>
+                                    <td class="text-end">@item.Value.ToString("N6")</td>
+                                    <td class="text-end fw-bold">@tryEquivalent.ToString("N4")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-danger d-flex align-items-center">
+            <i class="bi bi-exclamation-octagon-fill me-3 fs-4"></i>
+            <div>
+                <h4 class="alert-heading">Veri Alınamadı!</h4>
+                <p class="mb-0">Döviz kurları şu anda alınamıyor. Lütfen daha sonra tekrar deneyiniz.</p>
+            </div>
+        </div>
+    }
+</div>
+
+@section Styles {
+    <style>
+        .flag-icon {
+            width: 1.5em;
+            height: 1.5em;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .table th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 0.5rem;
+        }
+
+        .card-header {
+            border-radius: 0.5rem 0.5rem 0 0 !important;
+        }
+    </style>
 }
